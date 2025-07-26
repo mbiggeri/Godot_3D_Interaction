@@ -110,6 +110,7 @@ Use `AnimatedInteractable.gd` for objects that play an animation upon interactio
     * **Animation Name**: Type the exact name of the animation to play (e.g., "open").
     * **Can Toggle**: If checked, the first interaction plays the animation forward, and the second plays it in reverse (or plays the `Animation Name Reverse` if specified). Perfect for doors and light switches.
     <img src="./gifs/Porta.gif" alt="Door toggle" width="200">
+    
     * **One Time Interaction**: If checked, the object can only be interacted with once.
     * **Require/Set Global Bool Name**: See the section on [Global State Management](#global-state-management-with-globalbooleans).
 

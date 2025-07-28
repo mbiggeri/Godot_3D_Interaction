@@ -1,0 +1,175 @@
+[gd_scene load_steps=20 format=3 uid="uid://c6uvbp860teke"]
+
+[ext_resource type="PackedScene" uid="uid://cd40jtoh274b6" path="res://demo_scenes/BasicPlayer.tscn" id="1_jxgod"]
+[ext_resource type="Script" uid="uid://chhn4anfqgs2p" path="res://Scripts/Pickupable.gd" id="2_do0qw"]
+[ext_resource type="Script" uid="uid://obwkwj7invr0" path="res://Scripts/AnimatedInteractable.gd" id="3_mp2v7"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_do0qw"]
+albedo_color = Color(0.41960785, 0.32156864, 0.3647059, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_mp2v7"]
+material = SubResource("StandardMaterial3D_do0qw")
+size = Vector2(10, 15)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_jxgod"]
+material = SubResource("StandardMaterial3D_do0qw")
+size = Vector2(20, 10)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_udmcg"]
+
+[sub_resource type="Environment" id="Environment_jxgod"]
+background_mode = 1
+background_color = Color(0.82606, 0.82606006, 0.82606, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jxgod"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_do0qw"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[sub_resource type="SphereMesh" id="SphereMesh_do0qw"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_mp2v7"]
+
+[sub_resource type="Animation" id="Animation_udmcg"]
+resource_name = "Up"
+step = 0.0333333
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-4.865008, 0.73750305, -9.244814), Vector3(-4.865008, 3.2296739, -9.244814)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_265yl"]
+_data = {
+&"Up": SubResource("Animation_udmcg")
+}
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_mp2v7"]
+top_radius = 0.0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_udmcg"]
+
+[sub_resource type="Animation" id="Animation_265yl"]
+resource_name = "Disappear"
+step = 0.0333333
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_ja5fq"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_vibj8"]
+_data = {
+&"Disappear": SubResource("Animation_265yl"),
+&"RESET": SubResource("Animation_ja5fq")
+}
+
+[node name="DemoScene" type="Node3D"]
+
+[node name="Floor" type="Area3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.4994674)
+mesh = SubResource("PlaneMesh_mp2v7")
+skeleton = NodePath("../..")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -9.987371)
+mesh = SubResource("PlaneMesh_jxgod")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("WorldBoundaryShape3D_udmcg")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_jxgod")
+
+[node name="PlayerCharacter" parent="." instance=ExtResource("1_jxgod")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8509369, 8.131908)
+
+[node name="Interactable" type="Node3D" parent="."]
+
+[node name="Cube_Pickupable" type="Area3D" parent="Interactable" node_paths=PackedStringArray("mesh_to_highlight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6089923, -8.956369)
+collision_layer = 17
+script = ExtResource("2_do0qw")
+mesh_to_highlight = NodePath("MeshInstance3D")
+highlight_color = Color(0.6747748, 0, 0.21557817, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactable/Cube_Pickupable"]
+mesh = SubResource("BoxMesh_jxgod")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable/Cube_Pickupable"]
+shape = SubResource("BoxShape3D_do0qw")
+
+[node name="Sphere_Animated" type="Area3D" parent="Interactable" node_paths=PackedStringArray("animation_player", "mesh_to_highlight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.865008, 0.73750305, -9.244814)
+collision_layer = 17
+script = ExtResource("3_mp2v7")
+animation_player = NodePath("AnimationPlayer")
+animation_name = &"Up"
+can_toggle = true
+set_global_bool_on_interact_name = &"SphereMoved"
+mesh_to_highlight = NodePath("MeshInstance3D")
+highlight_color = Color(0.10822282, 9.62615e-07, 0.55810916, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactable/Sphere_Animated"]
+mesh = SubResource("SphereMesh_do0qw")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable/Sphere_Animated"]
+shape = SubResource("SphereShape3D_mp2v7")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Interactable/Sphere_Animated"]
+libraries = {
+&"": SubResource("AnimationLibrary_265yl")
+}
+
+[node name="Condition_Pyramid" type="Area3D" parent="Interactable" node_paths=PackedStringArray("animation_player", "mesh_to_highlight")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.3213553, 1.75439, -8.969889)
+collision_layer = 17
+script = ExtResource("3_mp2v7")
+animation_player = NodePath("AnimationPlayer_Pyramid")
+animation_name = &"Disappear"
+require_global_bool_name = &"SphereMoved"
+mesh_to_highlight = NodePath("MeshInstance3D")
+highlight_color = Color(0, 0.28135955, 0.13535428, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Interactable/Condition_Pyramid"]
+mesh = SubResource("CylinderMesh_mp2v7")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Interactable/Condition_Pyramid"]
+shape = SubResource("CylinderShape3D_udmcg")
+
+[node name="AnimationPlayer_Pyramid" type="AnimationPlayer" parent="Interactable/Condition_Pyramid"]
+libraries = {
+&"": SubResource("AnimationLibrary_vibj8")
+}

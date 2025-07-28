@@ -41,20 +41,6 @@ var _current_animation_playing_by_this: StringName = ""
 var _is_toggled_on: bool = false
 
 
-# --- NOTE on the "GlobalBooleans" Autoload ---
-# This script can use an autoload singleton named "GlobalBooleans" to manage game-wide state.
-# A simple implementation of "GlobalBooleans.gd" would look like this:
-#
-# extends Node
-# var bools: Dictionary = {}
-#
-# func set_global_bool(key: StringName, value: bool) -> void:
-#     bools[key] = value
-#
-# func get_global_bool(key: StringName) -> bool:
-#     return bools.get(key, false)
-#
-
 func _ready() -> void:
 	# Critical setup validation.
 	if not animation_player:
@@ -69,10 +55,6 @@ func _ready() -> void:
 	# Warn if the main animation name is not specified.
 	if animation_name == "":
 		print_rich("[color=orange]WARNING (%s): AnimatedInteractable - Main 'Animation Name' is not specified.[/color]" % name)
-
-	# Warn if the GlobalBooleans Autoload is not available but is being used.
-	if (require_global_bool_name != "" or set_global_bool_on_interact_name != "") and not Engine.has_singleton("GlobalBooleans"):
-		printerr("ERROR (%s): AnimatedInteractable - The 'GlobalBooleans' Autoload is not configured in the project but is required by this node." % name)
 
 
 func _exit_tree() -> void:
@@ -91,14 +73,12 @@ func _on_animation_finished(anim_name: StringName) -> void:
 func interact(_interactor = null) -> void:
 	# 1. Check if interaction is possible according to the base class.
 	if not can_interact:
-		super.interact(_interactor) # Let the base class print its "cannot be interacted with" message.
+		super.interact(_interactor)
 		return
 
-	# 2. [NEW] Check the global boolean requirement.
-	if require_global_bool_name != "" and Engine.has_singleton("GlobalBooleans"):
+	# 2. Check the global boolean requirement.
+	if require_global_bool_name != "":
 		if not GlobalBooleans.get_global_bool(require_global_bool_name):
-			# Interaction is blocked by a global flag. Do nothing.
-			# You could optionally play a "locked" sound here.
 			return
 
 	# 3. Check configuration and state.
@@ -108,7 +88,15 @@ func interact(_interactor = null) -> void:
 	if prevent_retrigger_if_playing and animation_player.is_playing():
 		return
 
-	# 4. Determine which animation to play based on toggle logic.
+	# 4. All preliminary checks passed, execute the base interaction.
+	# This will emit the "interacted" signal and play sounds.
+	super.interact(_interactor)
+	
+	# 5. Set the global boolean, if specified.
+	if set_global_bool_on_interact_name != "":
+		GlobalBooleans.set_global_bool(set_global_bool_on_interact_name, true)
+
+	# 6. Determine which animation to play based on toggle logic.
 	var anim_to_play: StringName = ""
 	var anim_speed: float = 1.0
 	
@@ -124,28 +112,17 @@ func interact(_interactor = null) -> void:
 	else: # Not a toggle, just play the main animation.
 		anim_to_play = animation_name
 
-	# 5. If we have a valid animation to play, proceed.
-	if anim_to_play == "" or not animation_player.has_animation(anim_to_play):
-		printerr("ERROR (%s): AnimatedInteractable - Animation '%s' not found or not specified." % [name, anim_to_play])
-		# Still call super.interact() so the interaction sound plays, etc.
-		super.interact(_interactor)
-		return
+	# 7. Play the animation if a valid one was found.
+	if anim_to_play != "" and animation_player.has_animation(anim_to_play):
+		var from_end: bool = (anim_speed < 0)
+		animation_player.play(anim_to_play, -1, anim_speed, from_end)
+		_current_animation_playing_by_this = anim_to_play
+		
+		if can_toggle:
+			_is_toggled_on = not _is_toggled_on
+	elif anim_to_play != "":
+		printerr("ERROR (%s): AnimatedInteractable - Animation '%s' not found." % [name, anim_to_play])
 
-	# 6. All checks passed, execute the base interaction.
-	# This will emit the "interacted" signal and play sounds.
-	super.interact(_interactor)
-
-	# 7. Play the animation.
-	animation_player.play(anim_to_play, -1, anim_speed)
-	_current_animation_playing_by_this = anim_to_play # Track the animation started by this script.
-	
-	if can_toggle:
-		_is_toggled_on = not _is_toggled_on
-
-	# 8. [NEW] Set the global boolean, if specified.
-	if set_global_bool_on_interact_name != "" and Engine.has_singleton("GlobalBooleans"):
-		GlobalBooleans.set_global_bool(set_global_bool_on_interact_name, true)
-
-	# 9. Handle one-time interaction if enabled.
+	# 8. Handle one-time interaction if enabled.
 	if one_time_interaction:
 		can_interact = false

@@ -1,0 +1,53 @@
+[gd_scene load_steps=7 format=3 uid="uid://cd40jtoh274b6"]
+
+[ext_resource type="Script" uid="uid://bgm7abr32ginx" path="res://demo_scenes/PlayerMovementScripts/BasicMovement.gd" id="1_5mrtw"]
+[ext_resource type="Script" uid="uid://cdyk2lhk6ochw" path="res://demo_scenes/PlayerMovementScripts/CameraBasicScript.gd" id="2_8oeoa"]
+[ext_resource type="Script" uid="uid://c1nfcnk5e8s3q" path="res://Scripts/InteractionRayController.gd" id="3_8oeoa"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_5yjma"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6bkys"]
+albedo_color = Color(0.196078, 0.223529, 1, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_p2iaj"]
+radius = 0.4
+height = 1.8
+
+[node name="PlayerCharacter" type="CharacterBody3D" groups=["PlayerCharacter"]]
+collision_layer = 3
+collision_mask = 9
+floor_snap_length = 0.0
+platform_floor_layers = 4294901761
+script = ExtResource("1_5mrtw")
+
+[node name="standingHitbox" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_5yjma")
+
+[node name="CameraHolder" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, -0.05)
+script = ExtResource("2_8oeoa")
+
+[node name="Camera3D" type="Camera3D" parent="CameraHolder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0641401, 0)
+cull_mask = 1
+current = true
+near = 0.01
+far = 1000.0
+
+[node name="InteractionRay" type="RayCast3D" parent="CameraHolder/Camera3D" node_paths=PackedStringArray("interactor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.104153, 0)
+exclude_parent = false
+target_position = Vector3(0, 0, -2)
+collision_mask = 16
+collide_with_areas = true
+debug_shape_custom_color = Color(0, 0, 1, 1)
+debug_shape_thickness = 5
+script = ExtResource("3_8oeoa")
+interactor = NodePath(".")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+layers = 2
+material_override = SubResource("StandardMaterial3D_6bkys")
+mesh = SubResource("CapsuleMesh_p2iaj")

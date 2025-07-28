@@ -9,6 +9,7 @@ var booleans: Dictionary = {}
 ## Creates the variable if it does not exist.
 func set_global_bool(variable_name: StringName, value: bool) -> void:
 	booleans[variable_name] = value
+	print("GlobalBooleans: '", variable_name, "' setted '", value, "'")
 	# You might want to emit a signal here if other nodes need to react dynamically to changes.
 	# emit_signal("global_bool_changed", variable_name, value)
 
